@@ -3,6 +3,21 @@ import numpy as np
 import pandas as pd
 import joblib
 
+st.set_page_config(page_title="Network Intrusion Detection System", layout="wide")
+st.markdown("""
+    <style>
+        body {
+            background-color: #0e1117;
+            color: white;
+        }
+        .stButton>button {
+            background-color: #1f77b4;
+            color: white;
+            border-radius: 5px;
+            padding: 10px 24px;
+        }
+    </style>
+""", unsafe_allow_html=True)
 
 def predict(input_data):
     prediction = model.predict(input_data)
