@@ -6,20 +6,21 @@ import joblib
 st.set_page_config(page_title="Network Intrusion Detection System", layout="wide")
 st.markdown("""
     <style>
-        body {
-            background-color: #0e1117;
-            color: white;
-        }
         .stButton>button {
             background-color: #1f77b4;
             color: white;
             border-radius: 5px;
             padding: 10px 24px;
         }
+        div[data-baseweb="input"] {
+            border: 5px solid #1f77b4 !important;
+            border-radius: 5px;
+            padding: 5px;
+        }
     </style>
 """, unsafe_allow_html=True)
 
-def predict(input_data):
+def predict(input_data, model):
     prediction = model.predict(input_data)
     st.success("Prediction Completed!")
     return "Anomaly" if prediction > 0.5 else "Normal"
