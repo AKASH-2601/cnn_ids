@@ -20,8 +20,9 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-def predict(input_data, model):
-    prediction = model.predict(input_data)
+def predict(data, model):
+    st.json(data)
+    prediction = model.predict(data)
     st.success("Prediction Completed!")
     return "Anomaly" if prediction > 0.5 else "Normal"
     
@@ -53,12 +54,12 @@ def user_input_features():
         'logged_in': 0.00, 'num_compromised': 0.00, 'root_shell': 0.00, 'su_attempted': 0.00,
         'num_root': 0.00, 'num_file_creations': 0.00, 'num_shells': 0.00, 'num_access_files': 0.00,
         'num_outbound_cmds': 0.00, 'is_host_login': 0.00, 'is_guest_login': 0.00,
-        'count': 220.00, 'srv_count': 3.00, 'serror_rate': 0.00, 'srv_serror_rate': 0.00,
-        'rerror_rate': 1.00, 'srv_rerror_rate': 1.00, 'same_srv_rate': 0.01, 'diff_srv_rate': 0.07,
-        'srv_diff_host_rate': 0.00, 'dst_host_count': 255.00, 'dst_host_srv_count': 3.00,
-        'dst_host_same_srv_rate': 0.01, 'dst_host_diff_srv_rate': 0.08, 'dst_host_same_src_port_rate': 0.00,
+        'count': 0.00, 'srv_count': 0.00, 'serror_rate': 0.00, 'srv_serror_rate': 0.00,
+        'rerror_rate': 0.00, 'srv_rerror_rate': 1.00, 'same_srv_rate': 0.01, 'diff_srv_rate': 0.00,
+        'srv_diff_host_rate': 0.00, 'dst_host_count': 0.00, 'dst_host_srv_count': 3.00,
+        'dst_host_same_srv_rate': 0.01, 'dst_host_diff_srv_rate': 0.00, 'dst_host_same_src_port_rate': 0.00,
         'dst_host_srv_diff_host_rate': 0.00, 'dst_host_serror_rate': 0.00, 'dst_host_srv_serror_rate': 0.00,
-        'dst_host_rerror_rate': 1.00, 'dst_host_srv_rerror_rate': 1.00
+        'dst_host_rerror_rate': 0.00, 'dst_host_srv_rerror_rate': 0.00
     }
     
     input_data = {}
@@ -89,11 +90,13 @@ def preprocess_data(input_df):
             input_df[col] = 0
     return input_df
 
-input_data = user_input_features()
 
-processed_data = preprocess_data(input_data)
 
 col1, col2, col3 = st.columns([1,2,1])
+
+input_data = user_input_features()
+processed_data = preprocess_data(input_data)
+
 with col2:
     if st.button("Predict", key="predict", help="Click to predict", use_container_width=True):
         result = predict(processed_data, model)
