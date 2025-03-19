@@ -2,6 +2,7 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import joblib
+from sklearn.preprocessing import LabelEncoder
 
 st.set_page_config(page_title="Network Intrusion Detection System", layout="wide")
 
@@ -31,7 +32,7 @@ except Exception as e:
 
 def predict(data, model):
     try:
-        prediction = model.predict(data)[0]  # Ensure we get a scalar value
+        prediction = model.predict(data)[0]  # Ensure scalar value
         return "Anomaly" if prediction > 0.5 else "Normal"
     except Exception as e:
         st.error(f"Prediction Error: {e}")
@@ -45,6 +46,16 @@ def user_input_features():
         col1, col2, col3 = st.columns(3)
 
         protocol_type = st.selectbox("Protocol Type", ['tcp', 'udp', 'icmp'])
+        service = st.selectbox("Service", [
+            'http', 'smtp', 'finger', 'domain_u', 'auth', 'telnet', 'ftp', 'eco_i', 'ntp_u',
+            'ecr_i', 'other', 'private', 'pop_3', 'ftp_data', 'rje', 'time', 'mtp', 'link',
+            'remote_job', 'gopher', 'ssh', 'name', 'whois', 'domain', 'login', 'imap4',
+            'daytime', 'ctf', 'nntp', 'shell', 'IRC', 'nnsp', 'http_443', 'exec', 'printer',
+            'efs', 'courier', 'uucp', 'klogin', 'kshell', 'echo', 'discard', 'systat',
+            'supdup', 'iso_tsap', 'hostnames', 'csnet_ns', 'pop_2', 'sunrpc', 'uucp_path',
+            'netbios_ns', 'netbios_ssn', 'netbios_dgm', 'sql_net', 'vmnet', 'bgp', 'Z39_50',
+            'ldap', 'netstat', 'urh_i', 'X11', 'urp_i', 'pm_dump', 'tftp_u', 'tim_i', 'red_i'
+        ])
         flag = st.selectbox("Flag", ['SF', 'S1', 'REJ', 'S2', 'S0', 'S3', 'RSTO', 'RSTR', 'RSTOS0', 'OTH', 'SH'])
 
         numerical_values = {
@@ -72,6 +83,7 @@ def user_input_features():
                 input_data[key] = col3.number_input(key, value=val)
 
         input_data['protocol_type'] = protocol_type
+        input_data['service'] = service
         input_data['flag'] = flag
 
         submit_button = st.form_submit_button(label="Predict")
@@ -86,7 +98,23 @@ def preprocess_data(input_data):
     categorical_columns = ['protocol_type', 'flag']
     df = pd.get_dummies(df, columns=categorical_columns)
 
-    # Ensure all expected columns exist in the dataframe
+    # Label Encoding for 'service'
+    service_encoder = LabelEncoder()
+    service_list = [
+        'http', 'smtp', 'finger', 'domain_u', 'auth', 'telnet', 'ftp', 'eco_i', 'ntp_u',
+        'ecr_i', 'other', 'private', 'pop_3', 'ftp_data', 'rje', 'time', 'mtp', 'link',
+        'remote_job', 'gopher', 'ssh', 'name', 'whois', 'domain', 'login', 'imap4',
+        'daytime', 'ctf', 'nntp', 'shell', 'IRC', 'nnsp', 'http_443', 'exec', 'printer',
+        'efs', 'courier', 'uucp', 'klogin', 'kshell', 'echo', 'discard', 'systat',
+        'supdup', 'iso_tsap', 'hostnames', 'csnet_ns', 'pop_2', 'sunrpc', 'uucp_path',
+        'netbios_ns', 'netbios_ssn', 'netbios_dgm', 'sql_net', 'vmnet', 'bgp', 'Z39_50',
+        'ldap', 'netstat', 'urh_i', 'X11', 'urp_i', 'pm_dump', 'tftp_u', 'tim_i', 'red_i'
+    ]
+
+    service_encoder.fit(service_list)
+    df['service'] = service_encoder.transform(df['service'])
+
+    # Ensure all expected columns exist
     expected_columns = [
         'protocol_type_icmp', 'protocol_type_tcp', 'protocol_type_udp',
         'flag_OTH', 'flag_REJ', 'flag_RSTO', 'flag_RSTOS0', 'flag_RSTR',
@@ -117,5 +145,3 @@ if submit:
             progress_bar = st.progress(0)
             for i in range(100):
                 progress_bar.progress(i + 1)
-
-            st.balloons()
