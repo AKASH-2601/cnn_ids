@@ -1,6 +1,64 @@
 import streamlit as st
+import numpy as np
 import pandas as pd
-import joblib
+
+
+def predict(input_data):
+    prediction = model.predict(input_data)
+    st.success("Prediction Completed!")
+    return "Anomaly" if prediction > 0.5 else "Normal"
+    
+
+model = joblib.load('my_model.joblib')
+
+# Streamlit UI
+st.title("Network Intrusion Detection System")
+
+def user_input_features():
+    col1, col2, col3 = st.columns(3)
+    
+    protocol_type = st.selectbox("Protocol Type", ['tcp', 'udp', 'icmp'])
+    service = st.selectbox("Service", [
+        'http', 'smtp', 'finger', 'domain_u', 'auth', 'telnet', 'ftp', 'eco_i', 'ntp_u',
+        'ecr_i', 'other', 'private', 'pop_3', 'ftp_data', 'rje', 'time', 'mtp', 'link',
+        'remote_job', 'gopher', 'ssh', 'name', 'whois', 'domain', 'login', 'imap4',
+        'daytime', 'ctf', 'nntp', 'shell', 'IRC', 'nnsp', 'http_443', 'exec', 'printer',
+        'efs', 'courier', 'uucp', 'klogin', 'kshell', 'echo', 'discard', 'systat',
+        'supdup', 'iso_tsap', 'hostnames', 'csnet_ns', 'pop_2', 'sunrpc', 'uucp_path',
+        'netbios_ns', 'netbios_ssn', 'netbios_dgm', 'sql_net', 'vmnet', 'bgp', 'Z39_50',
+        'ldap', 'netstat', 'urh_i', 'X11', 'urp_i', 'pm_dump', 'tftp_u', 'tim_i', 'red_i'
+    ])
+    flag = st.selectbox("Flag", ['SF', 'S1', 'REJ', 'S2', 'S0', 'S3', 'RSTO', 'RSTR', 'RSTOS0', 'OTH', 'SH'])
+    
+    numerical_values = {
+        'duration': 0.00, 'src_bytes': 0.00, 'dst_bytes': 0.00, 'land': 0.00,
+        'wrong_fragment': 0.00, 'urgent': 0.00, 'hot': 0.00, 'num_failed_logins': 0.00,
+        'logged_in': 0.00, 'num_compromised': 0.00, 'root_shell': 0.00, 'su_attempted': 0.00,
+        'num_root': 0.00, 'num_file_creations': 0.00, 'num_shells': 0.00, 'num_access_files': 0.00,
+        'num_outbound_cmds': 0.00, 'is_host_login': 0.00, 'is_guest_login': 0.00,
+        'count': 220.00, 'srv_count': 3.00, 'serror_rate': 0.00, 'srv_serror_rate': 0.00,
+        'rerror_rate': 1.00, 'srv_rerror_rate': 1.00, 'same_srv_rate': 0.01, 'diff_srv_rate': 0.07,
+        'srv_diff_host_rate': 0.00, 'dst_host_count': 255.00, 'dst_host_srv_count': 3.00,
+        'dst_host_same_srv_rate': 0.01, 'dst_host_diff_srv_rate': 0.08, 'dst_host_same_src_port_rate': 0.00,
+        'dst_host_srv_diff_host_rate': 0.00, 'dst_host_serror_rate': 0.00, 'dst_host_srv_serror_rate': 0.00,
+        'dst_host_rerror_rate': 1.00, 'dst_host_srv_rerror_rate': 1.00
+    }
+    
+    input_data = {}
+    
+    for i, (key, val) in enumerate(numerical_values.items()):
+        if i % 3 == 0:
+            input_data[key] = col1.number_input(key, value=val)
+        elif i % 3 == 1:
+            input_data[key] = col2.number_input(key, value=val)
+        else:
+            input_data[key] = col3.number_input(key, value=val)
+    
+    input_data['protocol_type'] = protocol_type
+    input_data['service'] = service
+    input_data['flag'] = flag
+    
+    return input_data
 
 def preprocess_data(input_df):
     categorical_columns = ['protocol_type', 'flag']
@@ -14,36 +72,13 @@ def preprocess_data(input_df):
             input_df[col] = 0
     return input_df
 
-def predict_model(input_df, model):
-    prediction = model.predict(input_df)
-    return "Anomaly" if prediction > 0.5 else "Normal"
+input_data = user_input_features()
 
-# Load model
-model = joblib.load('my_model.joblib')
-
-st.title("Anomaly Detection System")
-
-# User Input
-st.sidebar.header("Input Features")
-
-def user_input():
-    duration = st.sidebar.number_input("Duration", value=0.00)
-    service = st.sidebar.number_input("Service", value=45.00)
-    src_bytes = st.sidebar.number_input("Source Bytes", value=0.00)
-    dst_bytes = st.sidebar.number_input("Destination Bytes", value=0.00)
-    protocol_type = st.sidebar.selectbox("Protocol Type", ['icmp', 'tcp', 'udp'])
-    flag = st.sidebar.selectbox("Flag", ['OTH', 'REJ', 'RSTO', 'RSTOS0', 'RSTR', 'S0', 'S1', 'S2', 'S3', 'SF', 'SH'])
-    
-    input_dict = {
-        'duration': duration, 'service': service, 'src_bytes': src_bytes, 'dst_bytes': dst_bytes,
-        'protocol_type': protocol_type, 'flag': flag
-    }
-    return pd.DataFrame([input_dict])
-
-input_data = user_input()
 processed_data = preprocess_data(input_data)
 
-if st.sidebar.button("Predict"):
-    prediction = predict_model(processed_data, model)
-    st.write("### Prediction Result:")
-    st.write(f"## {prediction}")
+col1, col2, col3 = st.columns([1,2,1])
+with col2:
+    if st.button("Predict", key="predict", help="Click to predict", use_container_width=True):
+        result = predict(processed_data, model)
+        st.write("### Prediction Result:")
+        st.write(f"## {prediction}")
