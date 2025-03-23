@@ -29,7 +29,6 @@ except Exception as e:
     st.error(f"Error loading model: {e}")
     st.stop()
 
-
 def predict(data, model):
     try:
         prediction = model.predict(data)[0]  # Ensure scalar value
@@ -37,7 +36,6 @@ def predict(data, model):
     except Exception as e:
         st.error(f"Prediction Error: {e}")
         return None
-
 
 def user_input_features():
     st.subheader("Enter Network Traffic Details")
@@ -65,10 +63,11 @@ def user_input_features():
         input_data = {}
 
         for i, key in enumerate(numerical_fields):
+            default_value = None if st.session_state.reset else 0.00
             input_data[key] = (
-                col1.number_input(key, value=0.00, key=key) if i % 3 == 0 else
-                col2.number_input(key, value=0.00, key=key) if i % 3 == 1 else
-                col3.number_input(key, value=0.00, key=key)
+                col1.number_input(key, value=default_value, key=key) if i % 3 == 0 else
+                col2.number_input(key, value=default_value, key=key) if i % 3 == 1 else
+                col3.number_input(key, value=default_value, key=key)
             )
 
         input_data['protocol_type'] = protocol_type
@@ -79,13 +78,11 @@ def user_input_features():
         clear_button = st.form_submit_button(label="Clear")
 
     if clear_button:
-        for key in st.session_state.keys():
-            del st.session_state[key]
+        st.session_state.clear()
+        st.session_state.reset = True
         st.rerun()
 
     return input_data, submit_button
-
-
 
 def preprocess_data(input_data):
     df = pd.DataFrame([input_data])
