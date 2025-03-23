@@ -38,7 +38,7 @@ except Exception as e:
 
 
 def predict(data):
-        try:
+    try:
         prediction = model.predict(data)[0]  # Ensure scalar value
         return "Anomaly" if prediction > 0.5 else "Normal"
     except Exception as e:
