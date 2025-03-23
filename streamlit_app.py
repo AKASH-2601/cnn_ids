@@ -58,20 +58,21 @@ def user_input_features():
         ])
         flag = st.selectbox("Flag", ['SF', 'S1', 'REJ', 'S2', 'S0', 'S3', 'RSTO', 'RSTR', 'RSTOS0', 'OTH', 'SH'])
 
-        numerical_values = {
-            'src_bytes': 0.00, 'dst_bytes': 0.00,'num_failed_logins': 0.00,
-            'serror_rate': 0.00,'rerror_rate': 0.00,'dst_host_same_srv_rate': 0.00
-        }
+        numerical_fields = [
+            'src_bytes', 'dst_bytes', 'num_failed_logins',
+            'serror_rate', 'rerror_rate', 'dst_host_same_srv_rate'
+        ]
 
         input_data = {}
+        placeholders = [st.empty() for _ in numerical_fields]
 
-        for i, (key, val) in enumerate(numerical_values.items()):
+        for i, key in enumerate(numerical_fields):
             if i % 3 == 0:
-                input_data[key] = col1.number_input(key, value=val)
+                input_data[key] = col1.number_input(key, value=0.00, key=key)
             elif i % 3 == 1:
-                input_data[key] = col2.number_input(key, value=val)
+                input_data[key] = col2.number_input(key, value=0.00, key=key)
             else:
-                input_data[key] = col3.number_input(key, value=val)
+                input_data[key] = col3.number_input(key, value=0.00, key=key)
 
         input_data['protocol_type'] = protocol_type
         input_data['service'] = service
@@ -117,7 +118,6 @@ def preprocess_data(input_data):
             df[col] = 0  # Add missing columns with 0
 
     return df
-
 
 # UI Layout
 st.title("🔍 Network Intrusion Detection System")
