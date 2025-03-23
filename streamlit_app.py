@@ -45,8 +45,8 @@ def user_input_features():
     with st.form(key="input_form"):
         col1, col2, col3 = st.columns(3)
 
-        protocol_type = st.selectbox("Protocol Type", ['tcp', 'udp', 'icmp'])
-        service = st.selectbox("Service", [
+        protocol_type = col1.selectbox("Protocol Type", ['tcp', 'udp', 'icmp'])
+        service = col2.selectbox("Service", [
             'http', 'smtp', 'finger', 'domain_u', 'auth', 'telnet', 'ftp', 'eco_i', 'ntp_u',
             'ecr_i', 'other', 'private', 'pop_3', 'ftp_data', 'rje', 'time', 'mtp', 'link',
             'remote_job', 'gopher', 'ssh', 'name', 'whois', 'domain', 'login', 'imap4',
@@ -56,7 +56,7 @@ def user_input_features():
             'netbios_ns', 'netbios_ssn', 'netbios_dgm', 'sql_net', 'vmnet', 'bgp', 'Z39_50',
             'ldap', 'netstat', 'urh_i', 'X11', 'urp_i', 'pm_dump', 'tftp_u', 'tim_i', 'red_i'
         ])
-        flag = st.selectbox("Flag", ['SF', 'S1', 'REJ', 'S2', 'S0', 'S3', 'RSTO', 'RSTR', 'RSTOS0', 'OTH', 'SH'])
+        flag = col3.selectbox("Flag", ['SF', 'S1', 'REJ', 'S2', 'S0', 'S3', 'RSTO', 'RSTR', 'RSTOS0', 'OTH', 'SH'])
 
         numerical_fields = [
             'src_bytes', 'dst_bytes', 'num_failed_logins',
@@ -64,7 +64,6 @@ def user_input_features():
         ]
 
         input_data = {}
-        placeholders = [st.empty() for _ in numerical_fields]
 
         for i, key in enumerate(numerical_fields):
             if i % 3 == 0:
@@ -79,6 +78,10 @@ def user_input_features():
         input_data['flag'] = flag
 
         submit_button = st.form_submit_button(label="Predict")
+        clear_button = st.form_submit_button(label="Clear")
+
+    if clear_button:
+        st.experimental_rerun()
 
     return input_data, submit_button
 
@@ -86,11 +89,9 @@ def user_input_features():
 def preprocess_data(input_data):
     df = pd.DataFrame([input_data])
 
-    # One-hot encoding for 'protocol_type' and 'flag'
     categorical_columns = ['protocol_type', 'flag']
     df = pd.get_dummies(df, columns=categorical_columns)
 
-    # Label Encoding for 'service'
     service_encoder = LabelEncoder()
     service_list = [
         'http', 'smtp', 'finger', 'domain_u', 'auth', 'telnet', 'ftp', 'eco_i', 'ntp_u',
@@ -106,7 +107,6 @@ def preprocess_data(input_data):
     service_encoder.fit(service_list)
     df['service'] = service_encoder.transform(df['service'])
 
-    # Ensure all expected columns exist
     expected_columns = [
         'protocol_type_icmp', 'protocol_type_tcp', 'protocol_type_udp',
         'flag_OTH', 'flag_REJ', 'flag_RSTO', 'flag_RSTOS0', 'flag_RSTR',
@@ -115,11 +115,10 @@ def preprocess_data(input_data):
 
     for col in expected_columns:
         if col not in df.columns:
-            df[col] = 0  # Add missing columns with 0
+            df[col] = 0
 
     return df
 
-# UI Layout
 st.title("🔍 Network Intrusion Detection System")
 
 input_data, submit = user_input_features()
@@ -132,7 +131,6 @@ if submit:
         if result:
             st.success(f"Prediction Result: **{result}**")
 
-            # Progress bar for effect
             progress_bar = st.progress(0)
             for i in range(100):
                 progress_bar.progress(i + 1)
