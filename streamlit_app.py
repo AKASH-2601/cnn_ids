@@ -59,17 +59,8 @@ def user_input_features():
         flag = st.selectbox("Flag", ['SF', 'S1', 'REJ', 'S2', 'S0', 'S3', 'RSTO', 'RSTR', 'RSTOS0', 'OTH', 'SH'])
 
         numerical_values = {
-            'duration': 0.00, 'src_bytes': 0.00, 'dst_bytes': 0.00, 'land': 0.00,
-            'wrong_fragment': 0.00, 'urgent': 0.00, 'hot': 0.00, 'num_failed_logins': 0.00,
-            'logged_in': 0.00, 'num_compromised': 0.00, 'root_shell': 0.00, 'su_attempted': 0.00,
-            'num_root': 0.00, 'num_file_creations': 0.00, 'num_shells': 0.00, 'num_access_files': 0.00,
-            'num_outbound_cmds': 0.00, 'is_host_login': 0.00, 'is_guest_login': 0.00,
-            'count': 0.00, 'srv_count': 0.00, 'serror_rate': 0.00, 'srv_serror_rate': 0.00,
-            'rerror_rate': 0.00, 'srv_rerror_rate': 1.00, 'same_srv_rate': 0.01, 'diff_srv_rate': 0.00,
-            'srv_diff_host_rate': 0.00, 'dst_host_count': 0.00, 'dst_host_srv_count': 3.00,
-            'dst_host_same_srv_rate': 0.01, 'dst_host_diff_srv_rate': 0.00, 'dst_host_same_src_port_rate': 0.00,
-            'dst_host_srv_diff_host_rate': 0.00, 'dst_host_serror_rate': 0.00, 'dst_host_srv_serror_rate': 0.00,
-            'dst_host_rerror_rate': 0.00, 'dst_host_srv_rerror_rate': 0.00
+            'src_bytes': 0.00, 'dst_bytes': 0.00,'num_failed_logins': 0.00,
+            'serror_rate': 0.00,'rerror_rate': 0.00,'dst_host_same_srv_rate': 0.00
         }
 
         input_data = {}
