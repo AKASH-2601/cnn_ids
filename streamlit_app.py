@@ -30,9 +30,20 @@ def verify_input(data):
         if value is None or value == "":
             return False
     return True
+try:
+    model = joblib.load('my_model.joblib')
+except Exception as e:
+    st.error(f"Error loading model: {e}")
+    st.stop() 
+
 
 def predict(data):
-    st.write(data)
+        try:
+        prediction = model.predict(data)[0]  # Ensure scalar value
+        return "Anomaly" if prediction > 0.5 else "Normal"
+    except Exception as e:
+        st.error(f"Prediction Error: {e}")
+        return None
 
 def reset_form():
     st.session_state.reset = True
