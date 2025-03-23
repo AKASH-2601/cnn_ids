@@ -1,3 +1,4 @@
+
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -6,36 +7,54 @@ from sklearn.preprocessing import LabelEncoder
 
 st.set_page_config(page_title="Network Intrusion Detection System", layout="wide")
 
-st.markdown("""
+st.markdown(
+    """
     <style>
-        .stButton>button {
-            background-color: #1f77b4 !important;
-            color: white !important;
-            border-radius: 5px;
-            padding: 10px 24px;
-        }
-        div[data-baseweb="input"] {
-            border: 2px solid #1f77b4 !important;
-            border-radius: 5px;
-            padding: 5px;
-        }
+    /* Target the "Predict" button */
+    div.stFormSubmitButton button {
+        background-color: #ff5733 !important; /* Change button color */
+        color: white !important; /* Change text color */
+        text-align: center !important; /* Center align text */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 200px; /* Adjust button width */
+        margin: auto; /* Center align button */
+    }
     </style>
-""", unsafe_allow_html=True)
+    """,
+    unsafe_allow_html=True
+)
 
-# Load trained model
+
 try:
     model = joblib.load('my_model.joblib')
 except Exception as e:
     st.error(f"Error loading model: {e}")
-    st.stop()
+    st.stop() 
 
-def predict(data, model):
-    try:
+
+def verify_input(data, model):
+    for key, value in data.items():
+        if value is None or value == "":
+            return False
+    return True
+
+def predict(data):
+        try:
         prediction = model.predict(data)[0]  # Ensure scalar value
         return "Anomaly" if prediction > 0.5 else "Normal"
     except Exception as e:
         st.error(f"Prediction Error: {e}")
         return None
+
+def reset_form():
+    st.session_state.reset = True
+    st.session_state.protocol = 'tcp'
+    st.session_state.service = 'http'
+    st.session_state.flag = 'SF'
+    for key in ['src_bytes', 'dst_bytes', 'num_failed_logins', 'serror_rate', 'rerror_rate', 'dst_host_same_srv_rate']:
+        st.session_state[key] = 0.00
 
 def user_input_features():
     st.subheader("Enter Network Traffic Details")
@@ -75,13 +94,8 @@ def user_input_features():
         input_data['flag'] = flag
 
         submit_button = st.form_submit_button(label="Predict")
-        clear_button = st.form_submit_button(label="Clear")
-
-    if clear_button:
-        st.session_state.clear()
-        st.session_state.reset = True
-        st.rerun()
-
+        reset_button = st.form_submit_button(label="Reset", on_click=reset_form)
+        
     return input_data, submit_button
 
 def preprocess_data(input_data):
@@ -122,13 +136,16 @@ st.title("🔍 Network Intrusion Detection System")
 input_data, submit = user_input_features()
 
 if submit:
-    with st.spinner("Analyzing network traffic..."):
-        processed_data = preprocess_data(input_data)
-        result = predict(processed_data, model)
-        
-        if result:
-            st.success(f"Prediction Result: **{result}**")
-
-            progress_bar = st.progress(0)
-            for i in range(100):
-                progress_bar.progress(i + 1)
+    if verify_input(input_data):
+        with st.spinner("Analyzing network traffic..."):
+            processed_data = preprocess_data(input_data)
+            result = predict(processed_data, model)
+            
+            if result:
+                st.success(f"Prediction Result: **{result}**")
+                
+                progress_bar = st.progress(0)
+                for i in range(100):
+                    progress_bar.progress(i + 1)
+    else:
+        st.warning("⚠️ All fields are required. Please fill in all fields before submitting.")
