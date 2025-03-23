@@ -1,4 +1,3 @@
-
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -26,27 +25,14 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-
-try:
-    model = joblib.load('my_model.joblib')
-except Exception as e:
-    st.error(f"Error loading model: {e}")
-    st.stop() 
-
-
-def verify_input(data, model):
+def verify_input(data):
     for key, value in data.items():
         if value is None or value == "":
             return False
     return True
 
 def predict(data):
-        try:
-        prediction = model.predict(data)[0]  # Ensure scalar value
-        return "Anomaly" if prediction > 0.5 else "Normal"
-    except Exception as e:
-        st.error(f"Prediction Error: {e}")
-        return None
+    st.write(data)
 
 def reset_form():
     st.session_state.reset = True
@@ -139,7 +125,7 @@ if submit:
     if verify_input(input_data):
         with st.spinner("Analyzing network traffic..."):
             processed_data = preprocess_data(input_data)
-            result = predict(processed_data, model)
+            result = predict(processed_data)
             
             if result:
                 st.success(f"Prediction Result: **{result}**")
