@@ -9,16 +9,15 @@ st.set_page_config(page_title="Network Intrusion Detection System", layout="wide
 st.markdown(
     """
     <style>
-    /* Target the "Predict" button */
     div.stFormSubmitButton button {
-        background-color: #ff5733 !important; /* Change button color */
-        color: white !important; /* Change text color */
-        text-align: center !important; /* Center align text */
+        background-color: #ff5733 !important;
+        color: white !important;
+        text-align: center !important;
         display: flex;
         justify-content: center;
         align-items: center;
-        width: 200px; /* Adjust button width */
-        margin: auto; /* Center align button */
+        width: 200px;
+        margin: auto;
     }
     </style>
     """,
@@ -30,12 +29,13 @@ def verify_input(data):
         if value is None or value == "":
             return False
     return True
+
+# Load the trained model
 try:
-    model = joblib.load('my_model.joblib')
+    model = joblib.load('my_cnn_model.joblib')
 except Exception as e:
     st.error(f"Error loading model: {e}")
     st.stop() 
-
 
 def predict(data):
     try:
@@ -50,7 +50,8 @@ def reset_form():
     st.session_state.protocol = 'tcp'
     st.session_state.service = 'http'
     st.session_state.flag = 'SF'
-    for key in ['src_bytes', 'dst_bytes', 'num_failed_logins', 'serror_rate', 'rerror_rate', 'dst_host_same_srv_rate']:
+    for key in ['count', 'src_bytes', 'dst_bytes', 'dst_host_same_src_port_rate', 
+                'srv_count', 'logged_in', 'dst_host_count', 'dst_host_srv_diff_host_rate', 'same_srv_rate']:
         st.session_state[key] = 0.00
 
 def user_input_features():
@@ -75,7 +76,10 @@ def user_input_features():
         ], key="service")
         flag = col3.selectbox("Flag", ['SF', 'S1', 'REJ', 'S2', 'S0', 'S3', 'RSTO', 'RSTR', 'RSTOS0', 'OTH', 'SH'], key="flag")
 
-        numerical_fields = ['src_bytes', 'dst_bytes', 'num_failed_logins', 'serror_rate', 'rerror_rate', 'dst_host_same_srv_rate']
+        numerical_fields = [
+            'count', 'src_bytes', 'dst_bytes', 'dst_host_same_src_port_rate', 
+            'srv_count', 'logged_in', 'dst_host_count', 'dst_host_srv_diff_host_rate', 'same_srv_rate'
+        ]
         input_data = {}
 
         for i, key in enumerate(numerical_fields):
@@ -98,6 +102,7 @@ def user_input_features():
 def preprocess_data(input_data):
     df = pd.DataFrame([input_data])
 
+    # Apply one-hot encoding for categorical features
     categorical_columns = ['protocol_type', 'flag']
     df = pd.get_dummies(df, columns=categorical_columns)
 
