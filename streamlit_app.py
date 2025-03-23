@@ -42,10 +42,13 @@ def predict(data, model):
 def user_input_features():
     st.subheader("Enter Network Traffic Details")
 
+    if "reset" not in st.session_state:
+        st.session_state.reset = False
+
     with st.form(key="input_form"):
         col1, col2, col3 = st.columns(3)
 
-        protocol_type = col1.selectbox("Protocol Type", ['tcp', 'udp', 'icmp'])
+        protocol_type = col1.selectbox("Protocol Type", ['tcp', 'udp', 'icmp'], key="protocol")
         service = col2.selectbox("Service", [
             'http', 'smtp', 'finger', 'domain_u', 'auth', 'telnet', 'ftp', 'eco_i', 'ntp_u',
             'ecr_i', 'other', 'private', 'pop_3', 'ftp_data', 'rje', 'time', 'mtp', 'link',
@@ -55,23 +58,18 @@ def user_input_features():
             'supdup', 'iso_tsap', 'hostnames', 'csnet_ns', 'pop_2', 'sunrpc', 'uucp_path',
             'netbios_ns', 'netbios_ssn', 'netbios_dgm', 'sql_net', 'vmnet', 'bgp', 'Z39_50',
             'ldap', 'netstat', 'urh_i', 'X11', 'urp_i', 'pm_dump', 'tftp_u', 'tim_i', 'red_i'
-        ])
-        flag = col3.selectbox("Flag", ['SF', 'S1', 'REJ', 'S2', 'S0', 'S3', 'RSTO', 'RSTR', 'RSTOS0', 'OTH', 'SH'])
+        ], key="service")
+        flag = col3.selectbox("Flag", ['SF', 'S1', 'REJ', 'S2', 'S0', 'S3', 'RSTO', 'RSTR', 'RSTOS0', 'OTH', 'SH'], key="flag")
 
-        numerical_fields = [
-            'src_bytes', 'dst_bytes', 'num_failed_logins',
-            'serror_rate', 'rerror_rate', 'dst_host_same_srv_rate'
-        ]
-
+        numerical_fields = ['src_bytes', 'dst_bytes', 'num_failed_logins', 'serror_rate', 'rerror_rate', 'dst_host_same_srv_rate']
         input_data = {}
 
         for i, key in enumerate(numerical_fields):
-            if i % 3 == 0:
-                input_data[key] = col1.number_input(key, value=0.00, key=key)
-            elif i % 3 == 1:
-                input_data[key] = col2.number_input(key, value=0.00, key=key)
-            else:
-                input_data[key] = col3.number_input(key, value=0.00, key=key)
+            input_data[key] = (
+                col1.number_input(key, value=0.00, key=key) if i % 3 == 0 else
+                col2.number_input(key, value=0.00, key=key) if i % 3 == 1 else
+                col3.number_input(key, value=0.00, key=key)
+            )
 
         input_data['protocol_type'] = protocol_type
         input_data['service'] = service
@@ -81,9 +79,12 @@ def user_input_features():
         clear_button = st.form_submit_button(label="Clear")
 
     if clear_button:
-        st.experimental_rerun()
+        for key in st.session_state.keys():
+            del st.session_state[key]
+        st.rerun()
 
     return input_data, submit_button
+
 
 
 def preprocess_data(input_data):
