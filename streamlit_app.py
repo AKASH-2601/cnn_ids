@@ -152,7 +152,7 @@ def preprocess_data(input_data):
         "srv_count", "dst_host_count", "dst_host_srv_diff_host_rate", "same_srv_rate"
     ]
 
-    scaler = joblib.load('scaler.joblib')  # Load pre-fitted scaler
+    scaler = joblib.load('my_cnn_model.joblib')  # Load pre-fitted scaler
     df[num_cols] = scaler.transform(df[num_cols])
 
     return df
