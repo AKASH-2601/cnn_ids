@@ -56,13 +56,6 @@ except Exception as e:
     st.error(f"Error loading model: {e}")
     st.stop() 
 
-def predict(data):
-    try:
-        prediction = model.predict(data)[0]  # Ensure scalar value
-        return "Anomaly" if prediction > 0.5 else "Normal"
-    except Exception as e:
-        st.error(f"Prediction Error: {e}")
-        return None
 
 def reset_form():
     st.session_state.reset = True
@@ -118,26 +111,29 @@ def user_input_features():
         
     return input_data, submit_button
 
+def predict(data):
+    try:
+        # Ensure data has the correct shape
+        if data.shape[1] != model.n_features_in_:
+            st.error("Model input shape mismatch. Check preprocessing steps.")
+            return None
+
+        prediction = model.predict(data)
+        predicted_label = prediction[0] if isinstance(prediction, np.ndarray) else prediction
+
+        return "Anomaly" if predicted_label == 1 else "Normal"
+    except Exception as e:
+        st.error(f"Prediction Error: {e}")
+        return None
+
+
 def preprocess_data(input_data):
     df = pd.DataFrame([input_data])
-    st.write(df)
-    # Apply one-hot encoding for categorical features
+
     categorical_columns = ['protocol_type', 'flag']
     df = pd.get_dummies(df, columns=categorical_columns)
 
-    service_encoder = LabelEncoder()
-    service_list = [
-        'http', 'smtp', 'finger', 'domain_u', 'auth', 'telnet', 'ftp', 'eco_i', 'ntp_u',
-        'ecr_i', 'other', 'private', 'pop_3', 'ftp_data', 'rje', 'time', 'mtp', 'link',
-        'remote_job', 'gopher', 'ssh', 'name', 'whois', 'domain', 'login', 'imap4',
-        'daytime', 'ctf', 'nntp', 'shell', 'IRC', 'nnsp', 'http_443', 'exec', 'printer',
-        'efs', 'courier', 'uucp', 'klogin', 'kshell', 'echo', 'discard', 'systat',
-        'supdup', 'iso_tsap', 'hostnames', 'csnet_ns', 'pop_2', 'sunrpc', 'uucp_path',
-        'netbios_ns', 'netbios_ssn', 'netbios_dgm', 'sql_net', 'vmnet', 'bgp', 'Z39_50',
-        'ldap', 'netstat', 'urh_i', 'X11', 'urp_i', 'pm_dump', 'tftp_u', 'tim_i', 'red_i'
-    ]
-
-    service_encoder.fit(service_list)
+    service_encoder = joblib.load('service_encoder.joblib')  # Load pre-fitted encoder
     df['service'] = service_encoder.transform(df['service'])
 
     expected_columns = [
@@ -145,23 +141,22 @@ def preprocess_data(input_data):
         'flag_OTH', 'flag_REJ', 'flag_RSTO', 'flag_RSTOS0', 'flag_RSTR',
         'flag_S0', 'flag_S1', 'flag_S2', 'flag_S3', 'flag_SF', 'flag_SH'
     ]
-
+    
+    # Ensure all expected columns exist
     for col in expected_columns:
         if col not in df.columns:
             df[col] = 0
 
-    # MinMax Scaling for numerical columns
     num_cols = [
         "count", "src_bytes", "dst_bytes", "dst_host_same_src_port_rate",
         "srv_count", "dst_host_count", "dst_host_srv_diff_host_rate", "same_srv_rate"
     ]
 
-    scaler = MinMaxScaler()
-    df[num_cols] = scaler.fit_transform(df[num_cols])
-    st.write(df)
-    first_row_dict = df.iloc[0].to_dict()
-    st.write(first_row_dict)
+    scaler = joblib.load('scaler.joblib')  # Load pre-fitted scaler
+    df[num_cols] = scaler.transform(df[num_cols])
+
     return df
+
 
 st.title("🔍 Network Intrusion Detection System")
 
