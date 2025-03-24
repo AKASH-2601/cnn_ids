@@ -120,7 +120,7 @@ def user_input_features():
 
 def preprocess_data(input_data):
     df = pd.DataFrame([input_data])
-
+    st.write(df)
     # Apply one-hot encoding for categorical features
     categorical_columns = ['protocol_type', 'flag']
     df = pd.get_dummies(df, columns=categorical_columns)
@@ -158,7 +158,7 @@ def preprocess_data(input_data):
 
     scaler = MinMaxScaler()
     df[num_cols] = scaler.fit_transform(df[num_cols])
-
+    st.write(df)
     return df
 
 st.title("🔍 Network Intrusion Detection System")
