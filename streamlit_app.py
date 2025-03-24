@@ -2,7 +2,7 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import joblib
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 
 st.set_page_config(page_title="Network Intrusion Detection System", layout="wide")
 
@@ -149,6 +149,15 @@ def preprocess_data(input_data):
     for col in expected_columns:
         if col not in df.columns:
             df[col] = 0
+
+    # MinMax Scaling for numerical columns
+    num_cols = [
+        "count", "src_bytes", "dst_bytes", "dst_host_same_src_port_rate",
+        "srv_count", "dst_host_count", "dst_host_srv_diff_host_rate", "same_srv_rate"
+    ]
+
+    scaler = MinMaxScaler()
+    df[num_cols] = scaler.fit_transform(df[num_cols])
 
     return df
 
