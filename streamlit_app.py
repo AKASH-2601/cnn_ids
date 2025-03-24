@@ -118,32 +118,14 @@ def user_input_features():
         
     return input_data, submit_button
 
-def preprocess_data(input_df):
-    """Preprocess input data by applying one-hot encoding and label encoding."""
+def preprocess_data(input_data):
+    df = pd.DataFrame([input_data])
 
-    # Select only relevant columns
-    selected_columns = [
-        'count', 'src_bytes', 'service', 'dst_bytes', 'dst_host_same_src_port_rate',
-        'srv_count', 'logged_in', 'dst_host_count', 'protocol_type',
-        'dst_host_srv_diff_host_rate', 'same_srv_rate', 'flag'
-    ]
-    input_df = input_df[selected_columns]
-
-    # Define categorical columns for one-hot encoding
+    # Apply one-hot encoding for categorical features
     categorical_columns = ['protocol_type', 'flag']
-    all_categories = ['protocol_type_icmp', 'protocol_type_tcp', 'protocol_type_udp',
-                      'flag_OTH', 'flag_REJ', 'flag_RSTO', 'flag_RSTOS0', 'flag_RSTR',
-                      'flag_S0', 'flag_S1', 'flag_S2', 'flag_S3', 'flag_SF', 'flag_SH']
+    df = pd.get_dummies(df, columns=categorical_columns)
 
-    # Perform one-hot encoding for categorical features
-    input_df = pd.get_dummies(input_df, columns=categorical_columns)
-
-    # Ensure all one-hot encoded categories exist in the dataframe
-    for col in all_categories:
-        if col not in input_df.columns:
-            input_df[col] = 0  # Add missing columns with value 0
-
-    # Label Encoding for 'service'
+    service_encoder = LabelEncoder()
     service_list = [
         'http', 'smtp', 'finger', 'domain_u', 'auth', 'telnet', 'ftp', 'eco_i', 'ntp_u',
         'ecr_i', 'other', 'private', 'pop_3', 'ftp_data', 'rje', 'time', 'mtp', 'link',
@@ -155,31 +137,34 @@ def preprocess_data(input_df):
         'ldap', 'netstat', 'urh_i', 'X11', 'urp_i', 'pm_dump', 'tftp_u', 'tim_i', 'red_i'
     ]
 
-    # Initialize and fit LabelEncoder
-    service_encoder = LabelEncoder()
     service_encoder.fit(service_list)
+    df['service'] = service_encoder.transform(df['service'])
 
-    # Encode 'service' feature
-    if 'service' in input_df.columns:
-        input_df['service'] = service_encoder.transform(input_df['service'])
-    else:
-        print("Error: 'service' feature is missing from input data.")
-        exit()
+    expected_columns = [
+        'protocol_type_icmp', 'protocol_type_tcp', 'protocol_type_udp',
+        'flag_OTH', 'flag_REJ', 'flag_RSTO', 'flag_RSTOS0', 'flag_RSTR',
+        'flag_S0', 'flag_S1', 'flag_S2', 'flag_S3', 'flag_SF', 'flag_SH'
+    ]
 
+    for col in expected_columns:
+        if col not in df.columns:
+            df[col] = 0
+
+    # MinMax Scaling for numerical columns
     num_cols = [
         "count", "src_bytes", "dst_bytes", "dst_host_same_src_port_rate",
         "srv_count", "dst_host_count", "dst_host_srv_diff_host_rate", "same_srv_rate"
     ]
 
     scaler = MinMaxScaler()
-    input_df[num_cols] = scaler.fit_transform(input_df[num_cols])
+    df[num_cols] = scaler.fit_transform(df[num_cols])
 
-    return input_df
+    return df
 
 st.title("🔍 Network Intrusion Detection System")
 
 input_data, submit = user_input_features()
-
+st.write(input_data)
 if submit:
     if verify_input(input_data):
         with st.spinner("Analyzing network traffic..."):
