@@ -159,6 +159,8 @@ def preprocess_data(input_data):
     scaler = MinMaxScaler()
     df[num_cols] = scaler.fit_transform(df[num_cols])
     st.write(df)
+    first_row_dict = df.iloc[0].to_dict()
+    st.write(first_row_dict)
     return df
 
 st.title("🔍 Network Intrusion Detection System")
