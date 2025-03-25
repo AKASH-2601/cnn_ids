@@ -27,35 +27,47 @@ def preprocess_data(input_df):
     ]
     input_df = pd.DataFrame([input_df])[selected_columns]
 
+    st.write(input_df)
+    
     categorical_columns = ['protocol_type', 'flag']
     all_categories = ['protocol_type_icmp', 'protocol_type_tcp', 'protocol_type_udp',
                       'flag_OTH', 'flag_REJ', 'flag_RSTO', 'flag_RSTOS0', 'flag_RSTR',
                       'flag_S0', 'flag_S1', 'flag_S2', 'flag_S3', 'flag_SF', 'flag_SH']
+
+    # Perform one-hot encoding for categorical features
     input_df = pd.get_dummies(input_df, columns=categorical_columns)
 
+    # Ensure all one-hot encoded categories exist in the dataframe
     for col in all_categories:
         if col not in input_df.columns:
-            input_df[col] = 0
+            input_df[col] = 0  # Add missing columns with value 0
 
-    service_list = ['http', 'smtp', 'finger', 'domain_u', 'auth', 'telnet', 'ftp', 'eco_i', 'ntp_u',
-                    'ecr_i', 'other', 'private', 'pop_3', 'ftp_data', 'rje', 'time', 'mtp', 'link',
-                    'remote_job', 'gopher', 'ssh', 'name', 'whois', 'domain', 'login', 'imap4',
-                    'daytime', 'ctf', 'nntp', 'shell', 'IRC', 'nnsp', 'http_443', 'exec', 'printer',
-                    'efs', 'courier', 'uucp', 'klogin', 'kshell', 'echo', 'discard', 'systat',
-                    'supdup', 'iso_tsap', 'hostnames', 'csnet_ns', 'pop_2', 'sunrpc', 'uucp_path',
-                    'netbios_ns', 'netbios_ssn', 'netbios_dgm', 'sql_net', 'vmnet', 'bgp', 'Z39_50',
-                    'ldap', 'netstat', 'urh_i', 'X11', 'urp_i', 'pm_dump', 'tftp_u', 'tim_i', 'red_i']
+    service_map = {
+    'http': 22, 'smtp': 50, 'finger': 17, 'domain_u': 11, 'auth': 3, 'telnet': 56,
+    'ftp': 18, 'eco_i': 13, 'ntp_u': 39, 'ecr_i': 14, 'other': 40, 'private': 45,
+    'pop_3': 43, 'ftp_data': 19, 'rje': 48, 'time': 59, 'mtp': 31, 'link': 29,
+    'remote_job': 47, 'gopher': 20, 'ssh': 52, 'name': 32, 'whois': 65, 'domain': 10,
+    'login': 30, 'imap4': 24, 'daytime': 8, 'ctf': 7, 'nntp': 38, 'shell': 49,
+    'IRC': 0, 'nnsp': 37, 'http_443': 23, 'exec': 16, 'printer': 44, 'efs': 15,
+    'courier': 5, 'uucp': 62, 'klogin': 26, 'kshell': 27, 'echo': 12, 'discard': 9,
+    'systat': 55, 'supdup': 54, 'iso_tsap': 25, 'hostnames': 21, 'csnet_ns': 6,
+    'pop_2': 42, 'sunrpc': 53, 'uucp_path': 63, 'netbios_ns': 34, 'netbios_ssn': 35,
+    'netbios_dgm': 33, 'sql_net': 51, 'vmnet': 64, 'bgp': 4, 'Z39_50': 2, 'ldap': 28,
+    'netstat': 36, 'urh_i': 60, 'X11': 1, 'urp_i': 61, 'pm_dump': 41, 'tftp_u': 57,
+    'tim_i': 58, 'red_i': 46
+     }
 
-    service_encoder = LabelEncoder()
-    service_encoder.fit(service_list)
-    input_df['service'] = service_encoder.transform([input_df['service'][0]])
+    input_df['service'] = input_df['service'].map(service_map)
 
-    num_cols = ["count", "src_bytes", "dst_bytes", "dst_host_same_src_port_rate",
-                "srv_count", "dst_host_count", "dst_host_srv_diff_host_rate", "same_srv_rate"]
-    scaler = MinMaxScaler()
-    input_df[num_cols] = scaler.fit_transform(input_df[num_cols])
+    scaler = joblib.load('scalar_model.joblib')
+    num_cols = [
+    "count", "src_bytes", "dst_bytes", "dst_host_same_src_port_rate",
+    "srv_count", "dst_host_count", "dst_host_srv_diff_host_rate", "same_srv_rate"
+    ]
+    input_df[num_cols] = scaler.transform(input_df[num_cols])
 
     return input_df
+
 
 def predict_model(input_df):
     try:
