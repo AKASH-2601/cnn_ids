@@ -26,14 +26,6 @@ def modify_config(file_path=".streamlit/config.toml", theme="light"):
     except Exception as e:
         st.error(f"Error updating config file: {e}")
 
-# Streamlit UI
-on = st.toggle("Activate Dark Mode")
-
-if on:
-    modify_config(theme="dark")
-else:
-    modify_config(theme="light")
-
     
 st.set_page_config(page_title="Network Intrusion Detection System", layout="wide")
 
@@ -133,6 +125,14 @@ def user_input_features():
     return input_data, submit_button
 
 st.title("🔍 Network Intrusion Detection System")
+
+# Streamlit UI
+on = st.toggle("Activate Dark Mode")
+
+if on:
+    modify_config(theme="dark")
+else:
+    modify_config(theme="light")
 input_data, submit = user_input_features()
 if submit:
     if verify_input(input_data):
