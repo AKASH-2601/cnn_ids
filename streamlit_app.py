@@ -3,7 +3,30 @@ import numpy as np
 import pandas as pd
 import joblib
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler
+import toml
 
+def modify_config(file_path=".streamlit\config.toml"):
+    try:
+        # Load the existing config file
+        with open(file_path, "r") as file:
+            config = toml.load(file)
+        
+        # Modify the theme base to dark
+        if "theme" in config and "base" in config["theme"]:
+            config["theme"]["base"] = "dark"
+        
+        # Save the modified config file
+        with open(file_path, "w") as file:
+            toml.dump(config, file)
+        
+        print("Configuration updated successfully.")
+    except Exception as e:
+        print(f"Error updating config file: {e}")
+
+on = st.toggle("Activate feature")
+
+if on:
+     modify_config()
 st.set_page_config(page_title="Network Intrusion Detection System", layout="wide")
 
 def verify_input(data):
