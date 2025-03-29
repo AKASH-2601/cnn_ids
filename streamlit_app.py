@@ -72,6 +72,13 @@ def preprocess_data(input_df):
 
     return input_df
 
+def reset_form():
+    st.session_state.reset = True
+    st.session_state.protocol = 'tcp'
+    st.session_state.service = 'http'
+    st.session_state.flag = 'SF'
+    for key in ['src_bytes', 'dst_bytes', 'num_failed_logins', 'serror_rate', 'rerror_rate', 'dst_host_same_srv_rate']:
+        st.session_state[key] = 0.00
 
 def predict_model(input_df):
     try:
@@ -106,9 +113,8 @@ def user_input_features():
         input_data['service'] = service
         input_data['flag'] = flag
 
-        with col2:
-            st.markdown("<style>div.stMarkdownContainer> button { width: 100%; }</style>", unsafe_allow_html=True)
-            submit_button = st.form_submit_button(label="Predict")
+        submit_button = st.form_submit_button(label="Predict")
+        reset_button = st.form_submit_button(label="Reset", on_click=reset_form)
     
     return input_data, submit_button
 
