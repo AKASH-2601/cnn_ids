@@ -4,6 +4,7 @@ import pandas as pd
 import joblib
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 import toml
+from tensorflow import keras
 
 
     
@@ -17,7 +18,7 @@ def verify_input(data):
 
 # Load the trained model
 try:
-    model = joblib.load('my_cnn_model.joblib')
+    model = keras.models.load_model("/content/my_model.keras")
 except Exception as e:
     st.error(f"Error loading model: {e}")
     st.stop()
