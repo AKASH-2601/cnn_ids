@@ -18,7 +18,7 @@ def verify_input(data):
 
 # Load the trained model
 try:
-    model = keras.models.load_model("/content/my_model.keras")
+    model = keras.models.load_model("my_cnn_model.keras")
 except Exception as e:
     st.error(f"Error loading model: {e}")
     st.stop()
