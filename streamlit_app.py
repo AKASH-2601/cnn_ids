@@ -89,6 +89,8 @@ def predict_model(input_df):
 
 def user_input_features():
     st.subheader("Enter Network Traffic Details")
+    if "reset" not in st.session_state:
+        st.session_state.reset = False
     with st.form(key="input_form"):
         col1, col2, col3 = st.columns(3)
         protocol_type = col1.selectbox("Protocol Type", ['tcp', 'udp', 'icmp'])
@@ -118,7 +120,7 @@ def user_input_features():
     
     return input_data, submit_button
 
-st.title("🔍 Network Intrusion Detection System")
+st.title("Network Intrusion Detection System")
 
 input_data, submit = user_input_features()
 if submit:
