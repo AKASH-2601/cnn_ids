@@ -5,21 +5,6 @@ import joblib
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 import toml
 
-def modify_config(file_path=".streamlit/config.toml", theme="light"):
-    try:
-        # Load the existing config file
-        with open(file_path, "r") as file:
-            config = toml.load(file)
-        
-        # Modify the theme base
-        if "theme" in config:
-            config["theme"]["base"] = theme
-        
-        # Save the modified config file
-        with open(file_path, "w") as file:
-            toml.dump(config, file)
-    except Exception as e:
-        st.error(f"Error updating config file: {e}")
 
     
 st.set_page_config(page_title="Network Intrusion Detection System", layout="wide")
@@ -121,15 +106,6 @@ def user_input_features():
 
 st.title("🔍 Network Intrusion Detection System")
 
-# Streamlit UI
-on = st.toggle("Activate Dark Mode")
-
-if on:
-    modify_config(theme="dark")
-    st.rerun()
-else:
-    modify_config(theme="light")
-    st.rerun()
 input_data, submit = user_input_features()
 if submit:
     if verify_input(input_data):
