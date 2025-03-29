@@ -10,6 +10,43 @@ from tensorflow import keras
     
 st.set_page_config(page_title="Network Intrusion Detection System", layout="wide")
 
+st.markdown(
+    """
+    <style>
+    div.stFormSubmitButton button {
+  cursor: pointer;
+  outline: 0;
+  display: inline-block;
+  font-weight: 400;
+  line-height: 1.5;
+  text-align: center;
+  background-color: transparent;
+  border: 1px solid transparent;
+  padding: 6px 12px;
+  font-size: 1rem;
+  border-radius: .25rem;
+  transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+  color: #0d6efd;
+  border-color: #0d6efd;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 300px;
+    margin: auto;
+    }
+
+div.stFormSubmitButton button:hover {
+      color: #fff;
+      background-color: #0d6efd;
+      border-color: #0d6efd;
+  }
+  
+
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 def verify_input(data):
     for key, value in data.items():
         if value is None or value == "":
@@ -77,7 +114,8 @@ def reset_form():
     st.session_state.protocol = 'tcp'
     st.session_state.service = 'http'
     st.session_state.flag = 'SF'
-    for key in ['src_bytes', 'dst_bytes', 'num_failed_logins', 'serror_rate', 'rerror_rate', 'dst_host_same_srv_rate']:
+    for key in ['count', 'src_bytes', 'dst_bytes', 'dst_host_same_src_port_rate', 
+                'srv_count', 'logged_in', 'dst_host_count', 'dst_host_srv_diff_host_rate', 'same_srv_rate']:
         st.session_state[key] = 0.00
 
 def predict_model(input_df):
@@ -107,17 +145,23 @@ def user_input_features():
         numerical_fields = ['count', 'src_bytes', 'dst_bytes', 'dst_host_same_src_port_rate',
                             'srv_count', 'logged_in', 'dst_host_count', 'dst_host_srv_diff_host_rate', 'same_srv_rate']
         
-        input_data = {key: col1.number_input(key, value=0.00) if i % 3 == 0 else
-                          col2.number_input(key, value=0.00) if i % 3 == 1 else
-                          col3.number_input(key, value=0.00) for i, key in enumerate(numerical_fields)}
-        
+        input_data = {}
+
+        for i, key in enumerate(numerical_fields):
+            default_value = None if st.session_state.reset else 0.00
+            input_data[key] = (
+                col1.number_input(key, value=default_value, key=key) if i % 3 == 0 else
+                col2.number_input(key, value=default_value, key=key) if i % 3 == 1 else
+                col3.number_input(key, value=default_value, key=key)
+            )
+
         input_data['protocol_type'] = protocol_type
         input_data['service'] = service
         input_data['flag'] = flag
 
         submit_button = st.form_submit_button(label="Predict")
         reset_button = st.form_submit_button(label="Reset", on_click=reset_form)
-    
+        
     return input_data, submit_button
 
 st.title("Network Intrusion Detection System")
@@ -130,5 +174,8 @@ if submit:
             result = predict_model(processed_data)
             if result:
                 st.success(f"Prediction Result: **{result}**")
+                progress_bar = st.progress(0)
+                for i in range(100):
+                    progress_bar.progress(i + 1)
     else:
         st.warning("⚠️ All fields are required.")
