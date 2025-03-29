@@ -94,15 +94,22 @@ def user_input_features():
                                              'netbios_ns', 'netbios_ssn', 'netbios_dgm', 'sql_net', 'vmnet', 'bgp', 'Z39_50',
                                              'ldap', 'netstat', 'urh_i', 'X11', 'urp_i', 'pm_dump', 'tftp_u', 'tim_i', 'red_i'])
         flag = col3.selectbox("Flag", ['SF', 'S1', 'REJ', 'S2', 'S0', 'S3', 'RSTO', 'RSTR', 'RSTOS0', 'OTH', 'SH'])
+        
         numerical_fields = ['count', 'src_bytes', 'dst_bytes', 'dst_host_same_src_port_rate',
                             'srv_count', 'logged_in', 'dst_host_count', 'dst_host_srv_diff_host_rate', 'same_srv_rate']
+        
         input_data = {key: col1.number_input(key, value=0.00) if i % 3 == 0 else
                           col2.number_input(key, value=0.00) if i % 3 == 1 else
                           col3.number_input(key, value=0.00) for i, key in enumerate(numerical_fields)}
+        
         input_data['protocol_type'] = protocol_type
         input_data['service'] = service
         input_data['flag'] = flag
-        submit_button = col2.form_submit_button(label="Predict")
+
+        # Align the Predict button in col2
+        with col2:
+            submit_button = st.form_submit_button(label="Predict")
+    
     return input_data, submit_button
 
 st.title("🔍 Network Intrusion Detection System")
