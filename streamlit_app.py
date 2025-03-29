@@ -106,8 +106,8 @@ def user_input_features():
         input_data['service'] = service
         input_data['flag'] = flag
 
-        # Align the Predict button in col2
         with col2:
+            st.markdown("<style>div.stButton > button { width: 100%; }</style>", unsafe_allow_html=True)
             submit_button = st.form_submit_button(label="Predict")
     
     return input_data, submit_button
