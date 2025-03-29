@@ -5,21 +5,24 @@ import joblib
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 import toml
 
-def modify_config(file_path=".streamlit/config.toml"):
+import streamlit as st
+import toml
+
+def modify_config(file_path=".streamlit/config.toml", theme="light"):
     try:
         # Load the existing config file
         with open(file_path, "r") as file:
             config = toml.load(file)
         
-        # Modify the theme base to dark
+        # Modify the theme base
         if "theme" in config:
-            config["theme"]["base"] = "light"
+            config["theme"]["base"] = theme
         
         # Save the modified config file
         with open(file_path, "w") as file:
             toml.dump(config, file)
         
-        st.success("Configuration updated successfully. Please restart the app to apply changes.")
+        st.success(f"Theme updated to {theme}. Please restart the app to apply changes.")
     except Exception as e:
         st.error(f"Error updating config file: {e}")
 
@@ -27,7 +30,10 @@ def modify_config(file_path=".streamlit/config.toml"):
 on = st.toggle("Activate Dark Mode")
 
 if on:
-    modify_config()
+    modify_config(theme="dark")
+else:
+    modify_config(theme="light")
+
     
 st.set_page_config(page_title="Network Intrusion Detection System", layout="wide")
 
