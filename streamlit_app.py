@@ -18,8 +18,6 @@ def modify_config(file_path=".streamlit/config.toml", theme="light"):
         # Save the modified config file
         with open(file_path, "w") as file:
             toml.dump(config, file)
-        
-        st.success(f"Theme updated to {theme}. Please restart the app to apply changes.")
     except Exception as e:
         st.error(f"Error updating config file: {e}")
 
@@ -128,8 +126,10 @@ on = st.toggle("Activate Dark Mode")
 
 if on:
     modify_config(theme="dark")
+    st.rerun()
 else:
     modify_config(theme="light")
+    st.rerun()
 input_data, submit = user_input_features()
 if submit:
     if verify_input(input_data):
