@@ -102,7 +102,7 @@ def user_input_features():
         input_data['protocol_type'] = protocol_type
         input_data['service'] = service
         input_data['flag'] = flag
-        submit_button = st.form_submit_button(label="Predict")
+        submit_button = col2.form_submit_button(label="Predict")
     return input_data, submit_button
 
 st.title("🔍 Network Intrusion Detection System")
