@@ -5,9 +5,6 @@ import joblib
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 import toml
 
-import streamlit as st
-import toml
-
 def modify_config(file_path=".streamlit/config.toml", theme="light"):
     try:
         # Load the existing config file
