@@ -107,7 +107,7 @@ def user_input_features():
         input_data['flag'] = flag
 
         with col2:
-            st.markdown("<style>div.stFormSubmitButton st-emotion-cache-8atqhb e1mlolmg0 > button { width: 100%; }</style>", unsafe_allow_html=True)
+            st.markdown("<style>div.stMarkdownContainer> button { width: 100%; }</style>", unsafe_allow_html=True)
             submit_button = st.form_submit_button(label="Predict")
     
     return input_data, submit_button
