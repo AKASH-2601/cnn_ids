@@ -345,7 +345,9 @@ def main_page():
     if submit:
         if verify_input(input_data):
             with st.spinner("Analyzing network traffic..."):
+                st.write(input_data)
                 processed_data = preprocess_data(input_data)
+                st.write(processed_data)
                 result = predict_model(processed_data)
                 if result:
                     st.success(f"Prediction Result: **{result}**")
