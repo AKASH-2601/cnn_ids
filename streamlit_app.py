@@ -7,7 +7,7 @@ import smtplib
 import random
 import string
 import time
-import keras
+import tensorflow as tf  # Changed from keras to tensorflow
 import pandas as pd
 import joblib
 
@@ -172,8 +172,8 @@ def generate_otp():
 
 # Function to send OTP
 def send_otp(receiver_email):
-    sender_email = "akash26242931@gmail.com "  # Replace with your email
-    sender_password = "tqzt azhm ktyh bpze"  # Replace with your email password
+    sender_email = "your_email@gmail.com"  # Replace with your email
+    sender_password = "your_email_password"  # Replace with your email password
 
     otp = generate_otp()
     subject = "Your OTP Code"
@@ -270,13 +270,6 @@ def verify_input(data):
     return True
 
 
-# Load the trained model
-try:
-    model = keras.models.load_model("my_cnn_model.keras")
-except Exception as e:
-    st.error(f"Error loading model: {e}")
-    st.stop()
-
 
 def preprocess_data(input_df):
     selected_columns = [
@@ -318,7 +311,6 @@ def preprocess_data(input_df):
     input_df[num_cols] = scaler.transform(input_df[num_cols])
     return input_df
 
-
 def reset_form():
     st.session_state.reset = True
     st.session_state.protocol = 'tcp'
@@ -328,14 +320,24 @@ def reset_form():
                 'srv_count', 'logged_in', 'dst_host_count', 'dst_host_srv_diff_host_rate', 'same_srv_rate']:
         st.session_state[key] = 0.00
 
-
 def predict_model(input_df):
     try:
-        prediction = model.predict(input_df)[0]
+        # Ensure the input DataFrame has the correct shape and data types
+        input_data = preprocess_data(input_df)
+
+        # Convert to a TensorFlow tensor
+        input_tensor = tf.convert_to_tensor(input_data, dtype=tf.float32)  # Explicitly set dtype
+
+        # Add a batch dimension if needed (depending on your model's expected input)
+        if len(input_tensor.shape) == 2:
+            input_tensor = tf.expand_dims(input_tensor, axis=0)
+
+        prediction = model.predict(input_tensor)[0][0]  # Access the raw probability
         return "Anomaly" if prediction > 0.5 else "Normal"
     except Exception as e:
         st.error(f"Error during prediction: {e}")
         return None
+
 
 
 def main_page():
