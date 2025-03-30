@@ -233,10 +233,10 @@ def main_page():
             st.session_state.username = ""
             st.rerun()
     def verify_input(data):
-    for key, value in data.items():
-        if value is None or value == "":
-            return False
-    return True
+        for key, value in data.items():
+            if value is None or value == "":
+                return False
+        return True
 
     # Load the trained model
     try:
