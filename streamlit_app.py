@@ -10,6 +10,7 @@ import time
 import tensorflow as tf  # Changed from keras to tensorflow
 import pandas as pd
 import joblib
+import keras
 
 # File path for user data
 FILE_PATH = "users.json"
