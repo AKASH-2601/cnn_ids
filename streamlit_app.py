@@ -228,6 +228,19 @@ def apply_custom_css():
         unsafe_allow_html=True
     )
 def main_page():
+    input_data, submit = user_input_features()
+    if submit:
+        if verify_input(input_data):
+            with st.spinner("Analyzing network traffic..."):
+                processed_data = preprocess_data(input_data)
+                result = predict_model(processed_data)
+                if result:
+                    st.success(f"Prediction Result: **{result}**")
+                    progress_bar = st.progress(0)
+                    for i in range(100):
+                        progress_bar.progress(i + 1)
+        else:
+            st.warning("⚠️ All fields are required.")
     with st.sidebar:
         st.subheader(f"Welcome {st.session_state.username}!")
         st.write("You have successfully logged in.")
@@ -351,19 +364,7 @@ def main_page():
 
         return input_data, submit_button
 
-    input_data, submit = user_input_features()
-    if submit:
-        if verify_input(input_data):
-            with st.spinner("Analyzing network traffic..."):
-                processed_data = preprocess_data(input_data)
-                result = predict_model(processed_data)
-                if result:
-                    st.success(f"Prediction Result: **{result}**")
-                    progress_bar = st.progress(0)
-                    for i in range(100):
-                        progress_bar.progress(i + 1)
-        else:
-            st.warning("⚠️ All fields are required.")
+
 
 def main():
     st.title("Network Intrusion Detection System")
