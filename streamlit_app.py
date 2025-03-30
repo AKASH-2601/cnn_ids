@@ -9,9 +9,12 @@ import string
 import time
 from threading import Thread
 import keras
+import pandas as pd
+import joblib
 
 # File path for user data
 FILE_PATH = "users.json"
+
 
 def load_users():
     if not os.path.exists(FILE_PATH) or os.path.getsize(FILE_PATH) == 0:
@@ -22,9 +25,11 @@ def load_users():
         except json.JSONDecodeError:
             return []
 
+
 def save_users(users):
     with open(FILE_PATH, 'w') as file:
         json.dump(users, file, indent=4)
+
 
 def authenticate(username, password):
     users = load_users()
@@ -33,8 +38,10 @@ def authenticate(username, password):
             return True
     return False
 
+
 def is_valid_email(email):
     return re.match(r"^[\w\.-]+@[\w\.-]+\.\w+$", email) is not None
+
 
 def register_user(username, email, password):
     users = load_users()
@@ -48,15 +55,14 @@ def register_user(username, email, password):
     return True
 
 
-
 def signup_page():
     st.subheader("Create a New Account")
     new_username = st.text_input(":blue[Username]", placeholder='Enter username')
     email = st.text_input(":blue[Email]", placeholder='Enter Your Email')
     new_password = st.text_input(":blue[Password]", type="password", placeholder='Enter password')
     confirm_password = st.text_input(":blue[Confirm Password]", type="password", placeholder='Re-enter password')
-    
-    if st.button("Sign Up",type='primary' ,use_container_width=True):
+
+    if st.button("Sign Up", type='primary', use_container_width=True):
         if not new_username or not email or not new_password or not confirm_password:
             st.warning("All fields are required!")
         elif not is_valid_email(email):
@@ -69,26 +75,28 @@ def signup_page():
             st.rerun()
         else:
             st.error("Username already exists!")
-    
+
     if st.button("Already have an account? Login", type="tertiary"):
         st.session_state.page = "Login"
         st.rerun()
+
 
 def login_page():
     st.subheader("Login Page")
     username = st.text_input(":blue[Username]", placeholder='Enter your username')
     password = st.text_input(":blue[Password]", type="password", placeholder='Enter your password')
-    
-    if st.button("Login",type='primary' ,use_container_width=True):
+
+    if st.button("Login", type='primary', use_container_width=True):
         if not username or not password:
             st.warning("All fields are required!")
         elif authenticate(username, password):
             st.success(f"Welcome {username}! Login Successful")
             st.session_state.username = username
             st.session_state.page = "Main"
+            st.rerun()
         else:
             st.error("Invalid Username or Password")
-    
+
     if st.button("Back to Sign Up", type="tertiary"):
         st.session_state.page = "Sign Up"
         st.rerun()
@@ -97,26 +105,24 @@ def login_page():
         st.session_state.page = "Forgot Pwd"
         st.rerun()
 
+
 def update_password(email, new_password):
     users = load_users()
     user_found = False
-    
+
     for user in users:
         if user['email'] == email:
             user['password'] = new_password
             user_found = True
             break
-    
 
     if user_found:
-
         save_users(users)
         return True
     return False
 
 
 def forgot_password():
-
     @st.dialog("Reset Password")
     def reset(email):
         new_password = st.text_input(":blue[New Password]", type="password", placeholder='Enter new password')
@@ -158,15 +164,15 @@ def forgot_password():
                 reset(email)
             else:
                 st.error("Invalid OTP. ❌ Try again.")
-        
 
-    
     if st.button("Back to Login", type="tertiary"):
         st.session_state.page = "Login"
         st.rerun()
 
+
 def generate_otp():
     return ''.join(random.choices(string.digits, k=6))
+
 
 # Function to send OTP
 def send_otp(receiver_email):
@@ -188,7 +194,6 @@ def send_otp(receiver_email):
     except Exception as e:
         st.error(f"Failed to send OTP: {e}")
         return None, None
-
 def apply_custom_css():
     st.markdown(
         """
@@ -218,13 +223,10 @@ def apply_custom_css():
     background-color: #0d6efd;
     border-color: #0d6efd;
 }
-
-
         </style>
         """,
         unsafe_allow_html=True
     )
-
 def main_page():
     with st.sidebar:
         st.subheader(f"Welcome {st.session_state.username}!")
@@ -233,6 +235,7 @@ def main_page():
             st.session_state.page = "Login"
             st.session_state.username = ""
             st.rerun()
+
     def verify_input(data):
         for key, value in data.items():
             if value is None or value == "":
@@ -254,12 +257,10 @@ def main_page():
         ]
         input_df = pd.DataFrame([input_df])[selected_columns]
 
-        st.write(input_df)
-        
         categorical_columns = ['protocol_type', 'flag']
         all_categories = ['protocol_type_icmp', 'protocol_type_tcp', 'protocol_type_udp',
-                        'flag_OTH', 'flag_REJ', 'flag_RSTO', 'flag_RSTOS0', 'flag_RSTR',
-                        'flag_S0', 'flag_S1', 'flag_S2', 'flag_S3', 'flag_SF', 'flag_SH']
+                          'flag_OTH', 'flag_REJ', 'flag_RSTO', 'flag_RSTOS0', 'flag_RSTR',
+                          'flag_S0', 'flag_S1', 'flag_S2', 'flag_S3', 'flag_SF', 'flag_SH']
 
         # Perform one-hot encoding for categorical features
         input_df = pd.get_dummies(input_df, columns=categorical_columns)
@@ -270,26 +271,26 @@ def main_page():
                 input_df[col] = 0  # Add missing columns with value 0
 
         service_map = {
-        'http': 22, 'smtp': 50, 'finger': 17, 'domain_u': 11, 'auth': 3, 'telnet': 56,
-        'ftp': 18, 'eco_i': 13, 'ntp_u': 39, 'ecr_i': 14, 'other': 40, 'private': 45,
-        'pop_3': 43, 'ftp_data': 19, 'rje': 48, 'time': 59, 'mtp': 31, 'link': 29,
-        'remote_job': 47, 'gopher': 20, 'ssh': 52, 'name': 32, 'whois': 65, 'domain': 10,
-        'login': 30, 'imap4': 24, 'daytime': 8, 'ctf': 7, 'nntp': 38, 'shell': 49,
-        'IRC': 0, 'nnsp': 37, 'http_443': 23, 'exec': 16, 'printer': 44, 'efs': 15,
-        'courier': 5, 'uucp': 62, 'klogin': 26, 'kshell': 27, 'echo': 12, 'discard': 9,
-        'systat': 55, 'supdup': 54, 'iso_tsap': 25, 'hostnames': 21, 'csnet_ns': 6,
-        'pop_2': 42, 'sunrpc': 53, 'uucp_path': 63, 'netbios_ns': 34, 'netbios_ssn': 35,
-        'netbios_dgm': 33, 'sql_net': 51, 'vmnet': 64, 'bgp': 4, 'Z39_50': 2, 'ldap': 28,
-        'netstat': 36, 'urh_i': 60, 'X11': 1, 'urp_i': 61, 'pm_dump': 41, 'tftp_u': 57,
-        'tim_i': 58, 'red_i': 46
+            'http': 22, 'smtp': 50, 'finger': 17, 'domain_u': 11, 'auth': 3, 'telnet': 56,
+            'ftp': 18, 'eco_i': 13, 'ntp_u': 39, 'ecr_i': 14, 'other': 40, 'private': 45,
+            'pop_3': 43, 'ftp_data': 19, 'rje': 48, 'time': 59, 'mtp': 31, 'link': 29,
+            'remote_job': 47, 'gopher': 20, 'ssh': 52, 'name': 32, 'whois': 65, 'domain': 10,
+            'login': 30, 'imap4': 24, 'daytime': 8, 'ctf': 7, 'nntp': 38, 'shell': 49,
+            'IRC': 0, 'nnsp': 37, 'http_443': 23, 'exec': 16, 'printer': 44, 'efs': 15,
+            'courier': 5, 'uucp': 62, 'klogin': 26, 'kshell': 27, 'echo': 12, 'discard': 9,
+            'systat': 55, 'supdup': 54, 'iso_tsap': 25, 'hostnames': 21, 'csnet_ns': 6,
+            'pop_2': 42, 'sunrpc': 53, 'uucp_path': 63, 'netbios_ns': 34, 'netbios_ssn': 35,
+            'netbios_dgm': 33, 'sql_net': 51, 'vmnet': 64, 'bgp': 4, 'Z39_50': 2, 'ldap': 28,
+            'netstat': 36, 'urh_i': 60, 'X11': 1, 'urp_i': 61, 'pm_dump': 41, 'tftp_u': 57,
+            'tim_i': 58, 'red_i': 46
         }
 
         input_df['service'] = input_df['service'].map(service_map)
 
         scaler = joblib.load('scalar_model.joblib')
         num_cols = [
-        "count", "src_bytes", "dst_bytes", "dst_host_same_src_port_rate",
-        "srv_count", "dst_host_count", "dst_host_srv_diff_host_rate", "same_srv_rate"
+            "count", "src_bytes", "dst_bytes", "dst_host_same_src_port_rate",
+            "srv_count", "dst_host_count", "dst_host_srv_diff_host_rate", "same_srv_rate"
         ]
         input_df[num_cols] = scaler.transform(input_df[num_cols])
 
@@ -300,7 +301,7 @@ def main_page():
         st.session_state.protocol = 'tcp'
         st.session_state.service = 'http'
         st.session_state.flag = 'SF'
-        for key in ['count', 'src_bytes', 'dst_bytes', 'dst_host_same_src_port_rate', 
+        for key in ['count', 'src_bytes', 'dst_bytes', 'dst_host_same_src_port_rate',
                     'srv_count', 'logged_in', 'dst_host_count', 'dst_host_srv_diff_host_rate', 'same_srv_rate']:
             st.session_state[key] = 0.00
 
@@ -327,10 +328,10 @@ def main_page():
                                                 'netbios_ns', 'netbios_ssn', 'netbios_dgm', 'sql_net', 'vmnet', 'bgp', 'Z39_50',
                                                 'ldap', 'netstat', 'urh_i', 'X11', 'urp_i', 'pm_dump', 'tftp_u', 'tim_i', 'red_i'])
             flag = col3.selectbox("Flag", ['SF', 'S1', 'REJ', 'S2', 'S0', 'S3', 'RSTO', 'RSTR', 'RSTOS0', 'OTH', 'SH'])
-            
+
             numerical_fields = ['count', 'src_bytes', 'dst_bytes', 'dst_host_same_src_port_rate',
                                 'srv_count', 'logged_in', 'dst_host_count', 'dst_host_srv_diff_host_rate', 'same_srv_rate']
-            
+
             input_data = {}
 
             for i, key in enumerate(numerical_fields):
@@ -347,22 +348,22 @@ def main_page():
 
             submit_button = st.form_submit_button(label="Predict")
             reset_button = st.form_submit_button(label="Reset", on_click=reset_form)
-            
+
         return input_data, submit_button
 
-        input_data, submit = user_input_features()
-        if submit:
-            if verify_input(input_data):
-                with st.spinner("Analyzing network traffic..."):
-                    processed_data = preprocess_data(input_data)
-                    result = predict_model(processed_data)
-                    if result:
-                        st.success(f"Prediction Result: **{result}**")
-                        progress_bar = st.progress(0)
-                        for i in range(100):
-                            progress_bar.progress(i + 1)
-            else:
-                st.warning("⚠️ All fields are required.")
+    input_data, submit = user_input_features()
+    if submit:
+        if verify_input(input_data):
+            with st.spinner("Analyzing network traffic..."):
+                processed_data = preprocess_data(input_data)
+                result = predict_model(processed_data)
+                if result:
+                    st.success(f"Prediction Result: **{result}**")
+                    progress_bar = st.progress(0)
+                    for i in range(100):
+                        progress_bar.progress(i + 1)
+        else:
+            st.warning("⚠️ All fields are required.")
 
 def main():
     st.title("Network Intrusion Detection System")
@@ -371,7 +372,7 @@ def main():
         st.session_state.page = "Sign Up"
     if "username" not in st.session_state:
         st.session_state.username = ""
-    
+
     if st.session_state.page == "Sign Up":
         signup_page()
     elif st.session_state.page == "Login":
