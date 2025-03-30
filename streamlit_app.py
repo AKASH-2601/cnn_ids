@@ -7,7 +7,6 @@ import smtplib
 import random
 import string
 import time
-from threading import Thread
 import keras
 import pandas as pd
 import joblib
@@ -123,24 +122,8 @@ def update_password(email, new_password):
 
 
 def forgot_password():
-    @st.dialog("Reset Password")
-    def reset(email):
-        new_password = st.text_input(":blue[New Password]", type="password", placeholder='Enter new password')
-        confirm_password = st.text_input(":blue[Confirm Password]", type="password", placeholder='Re-enter password')
-        if st.button('Reset'):
-            if not new_password or not confirm_password:
-                st.warning("All fields are required!")
-            elif new_password != confirm_password:
-                st.error("Passwords do not match!")
-            elif update_password(email, new_password):
-                st.success("Password reset successfully")
-                st.session_state.page = "Login"
-                st.rerun()
-            else:
-                st.error("Email not found! Please check again.")
-
     st.subheader("Forgot Password")
-    email = st.text_input(":blue[Email]", placeholder='Enter your eamil')
+    email = st.text_input(":blue[Email]", placeholder='Enter your email')
     generated_otp = None
     otp_timestamp = None
     if st.button("Get OTP"):
@@ -161,7 +144,20 @@ def forgot_password():
                 st.error("OTP has expired! Request a new one.")
             elif otp == st.session_state["generated_otp"]:
                 st.success("OTP Verified Successfully! ✅")
-                reset(email)
+                new_password = st.text_input(":blue[New Password]", type="password", placeholder='Enter new password')
+                confirm_password = st.text_input(":blue[Confirm Password]", type="password", placeholder='Re-enter password')
+                if st.button('Reset Password'):
+                    if not new_password or not confirm_password:
+                        st.warning("All fields are required!")
+                    elif new_password != confirm_password:
+                        st.error("Passwords do not match!")
+                    elif update_password(email, new_password):
+                        st.success("Password reset successfully")
+                        st.session_state.page = "Login"
+                        st.rerun()
+                    else:
+                        st.error("Email not found! Please check again.")
+
             else:
                 st.error("Invalid OTP. ❌ Try again.")
 
@@ -176,8 +172,8 @@ def generate_otp():
 
 # Function to send OTP
 def send_otp(receiver_email):
-    sender_email = "akash26242931@gmail.com"
-    sender_password = "tqzt azhm ktyh bpze"
+    sender_email = "akash26242931@gmail.com "  # Replace with your email
+    sender_password = "tqzt azhm ktyh bpze"  # Replace with your email password
 
     otp = generate_otp()
     subject = "Your OTP Code"
@@ -194,13 +190,13 @@ def send_otp(receiver_email):
     except Exception as e:
         st.error(f"Failed to send OTP: {e}")
         return None, None
+
+
 def apply_custom_css():
     st.markdown(
         """
         <style>
-.stFormSubmitButton st-emotion-cache-8atqhb e1mlolmg0,
-.st-emotion-cache-1bd5s7o.em9zgd01,
-.st-emotion-cache-b0y9n5.em9zgd02 {
+.stFormSubmitButton button {
     cursor: pointer;
     outline: 0;
     display: inline-block;
@@ -216,9 +212,7 @@ def apply_custom_css():
     color: #0d6efd;
     border-color: #0d6efd;
 }
-.stFormSubmitButton st-emotion-cache-8atqhb e1mlolmg0:hover,
-.st-emotion-cache-1bd5s7o.em9zgd01:hover,
-.st-emotion-cache-b0y9n5.em9zgd02:hover {
+.stFormSubmitButton button:hover {
     color: #fff;
     background-color: #0d6efd;
     border-color: #0d6efd;
@@ -230,51 +224,53 @@ def apply_custom_css():
 
 
 def user_input_features():
-        st.subheader("Enter Network Traffic Details")
-        if "reset" not in st.session_state:
-            st.session_state.reset = False
-        with st.form(key="input_form"):
-            col1, col2, col3 = st.columns(3)
-            protocol_type = col1.selectbox("Protocol Type", ['tcp', 'udp', 'icmp'])
-            service = col2.selectbox("Service", ['http', 'smtp', 'finger', 'domain_u', 'auth', 'telnet', 'ftp', 'eco_i', 'ntp_u',
-                                                'ecr_i', 'other', 'private', 'pop_3', 'ftp_data', 'rje', 'time', 'mtp', 'link',
-                                                'remote_job', 'gopher', 'ssh', 'name', 'whois', 'domain', 'login', 'imap4',
-                                                'daytime', 'ctf', 'nntp', 'shell', 'IRC', 'nnsp', 'http_443', 'exec', 'printer',
-                                                'efs', 'courier', 'uucp', 'klogin', 'kshell', 'echo', 'discard', 'systat',
-                                                'supdup', 'iso_tsap', 'hostnames', 'csnet_ns', 'pop_2', 'sunrpc', 'uucp_path',
-                                                'netbios_ns', 'netbios_ssn', 'netbios_dgm', 'sql_net', 'vmnet', 'bgp', 'Z39_50',
-                                                'ldap', 'netstat', 'urh_i', 'X11', 'urp_i', 'pm_dump', 'tftp_u', 'tim_i', 'red_i'])
-            flag = col3.selectbox("Flag", ['SF', 'S1', 'REJ', 'S2', 'S0', 'S3', 'RSTO', 'RSTR', 'RSTOS0', 'OTH', 'SH'])
+    st.subheader("Enter Network Traffic Details")
+    if "reset" not in st.session_state:
+        st.session_state.reset = False
+    with st.form(key="input_form"):
+        col1, col2, col3 = st.columns(3)
+        protocol_type = col1.selectbox("Protocol Type", ['tcp', 'udp', 'icmp'], key="protocol")
+        service = col2.selectbox("Service", ['http', 'smtp', 'finger', 'domain_u', 'auth', 'telnet', 'ftp', 'eco_i', 'ntp_u',
+                                            'ecr_i', 'other', 'private', 'pop_3', 'ftp_data', 'rje', 'time', 'mtp', 'link',
+                                            'remote_job', 'gopher', 'ssh', 'name', 'whois', 'domain', 'login', 'imap4',
+                                            'daytime', 'ctf', 'nntp', 'shell', 'IRC', 'nnsp', 'http_443', 'exec', 'printer',
+                                            'efs', 'courier', 'uucp', 'klogin', 'kshell', 'echo', 'discard', 'systat',
+                                            'supdup', 'iso_tsap', 'hostnames', 'csnet_ns', 'pop_2', 'sunrpc', 'uucp_path',
+                                            'netbios_ns', 'netbios_ssn', 'netbios_dgm', 'sql_net', 'vmnet', 'bgp', 'Z39_50',
+                                            'ldap', 'netstat', 'urh_i', 'X11', 'urp_i', 'pm_dump', 'tftp_u', 'tim_i', 'red_i'], key="service")
+        flag = col3.selectbox("Flag", ['SF', 'S1', 'REJ', 'S2', 'S0', 'S3', 'RSTO', 'RSTR', 'RSTOS0', 'OTH', 'SH'], key="flag")
 
-            numerical_fields = ['count', 'src_bytes', 'dst_bytes', 'dst_host_same_src_port_rate',
-                                'srv_count', 'logged_in', 'dst_host_count', 'dst_host_srv_diff_host_rate', 'same_srv_rate']
+        numerical_fields = ['count', 'src_bytes', 'dst_bytes', 'dst_host_same_src_port_rate',
+                            'srv_count', 'logged_in', 'dst_host_count', 'dst_host_srv_diff_host_rate', 'same_srv_rate']
 
-            input_data = {}
+        input_data = {}
 
-            for i, key in enumerate(numerical_fields):
-                default_value = None if st.session_state.reset else 0.00
-                input_data[key] = (
-                    col1.number_input(key, value=default_value, key=key) if i % 3 == 0 else
-                    col2.number_input(key, value=default_value, key=key) if i % 3 == 1 else
-                    col3.number_input(key, value=default_value, key=key)
-                )
+        for i, key in enumerate(numerical_fields):
+            default_value = 0.00 if not st.session_state.reset else 0.00
+            input_data[key] = (
+                col1.number_input(key, value=default_value, key=key) if i % 3 == 0 else
+                col2.number_input(key, value=default_value, key=key) if i % 3 == 1 else
+                col3.number_input(key, value=default_value, key=key)
+            )
 
-            input_data['protocol_type'] = protocol_type
-            input_data['service'] = service
-            input_data['flag'] = flag
+        input_data['protocol_type'] = protocol_type
+        input_data['service'] = service
+        input_data['flag'] = flag
 
-            submit_button = st.form_submit_button(label="Predict")
-            reset_button = st.form_submit_button(label="Reset", on_click=reset_form)
+        submit_button = st.form_submit_button(label="Predict")
+        reset_button = st.form_submit_button(label="Reset", on_click=reset_form)
 
-        return input_data, submit_button
+    return input_data, submit_button
+
 
 def verify_input(data):
-        for key, value in data.items():
-            if value is None or value == "":
-                return False
-        return True
+    for key, value in data.items():
+        if value is None or value == "":
+            return False
+    return True
 
-    # Load the trained model
+
+# Load the trained model
 try:
     model = keras.models.load_model("my_cnn_model.keras")
 except Exception as e:
@@ -322,6 +318,7 @@ def preprocess_data(input_df):
     input_df[num_cols] = scaler.transform(input_df[num_cols])
     return input_df
 
+
 def reset_form():
     st.session_state.reset = True
     st.session_state.protocol = 'tcp'
@@ -330,12 +327,14 @@ def reset_form():
     for key in ['count', 'src_bytes', 'dst_bytes', 'dst_host_same_src_port_rate',
                 'srv_count', 'logged_in', 'dst_host_count', 'dst_host_srv_diff_host_rate', 'same_srv_rate']:
         st.session_state[key] = 0.00
-        
+
+
 def predict_model(input_df):
     try:
         prediction = model.predict(input_df)[0]
         return "Anomaly" if prediction > 0.5 else "Normal"
     except Exception as e:
+        st.error(f"Error during prediction: {e}")
         return None
 
 
@@ -350,7 +349,10 @@ def main_page():
                     st.success(f"Prediction Result: **{result}**")
                     progress_bar = st.progress(0)
                     for i in range(100):
+                        time.sleep(0.01)  # Add a small delay for visual effect
                         progress_bar.progress(i + 1)
+                else:
+                    st.error("Failed to get prediction. Please check the model and input data.")
         else:
             st.warning("⚠️ All fields are required.")
     with st.sidebar:
@@ -360,10 +362,6 @@ def main_page():
             st.session_state.page = "Login"
             st.session_state.username = ""
             st.rerun()
-
-    
-
-    
 
 
 def main():
@@ -382,6 +380,7 @@ def main():
         main_page()
     elif st.session_state.page == "Forgot Pwd":
         forgot_password()
+
 
 if __name__ == "__main__":
     main()
