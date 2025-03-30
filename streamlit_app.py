@@ -8,6 +8,7 @@ import random
 import string
 import time
 from threading import Thread
+import keras
 
 # File path for user data
 FILE_PATH = "users.json"
