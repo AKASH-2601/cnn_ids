@@ -323,7 +323,7 @@ def reset_form():
 
 def predict_model(input_df):
     try:
-        model = keras.models.load_model("my_model.keras")
+        model = keras.models.load_model("my_cnn_model.keras")
         prediction = model.predict(input_tensor)[0][0]  # Access the raw probability
         return "Anomaly" if prediction > 0.5 else "Normal"
     except Exception as e:
