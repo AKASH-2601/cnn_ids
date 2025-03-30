@@ -227,6 +227,47 @@ def apply_custom_css():
         """,
         unsafe_allow_html=True
     )
+
+
+def user_input_features():
+        st.subheader("Enter Network Traffic Details")
+        if "reset" not in st.session_state:
+            st.session_state.reset = False
+        with st.form(key="input_form"):
+            col1, col2, col3 = st.columns(3)
+            protocol_type = col1.selectbox("Protocol Type", ['tcp', 'udp', 'icmp'])
+            service = col2.selectbox("Service", ['http', 'smtp', 'finger', 'domain_u', 'auth', 'telnet', 'ftp', 'eco_i', 'ntp_u',
+                                                'ecr_i', 'other', 'private', 'pop_3', 'ftp_data', 'rje', 'time', 'mtp', 'link',
+                                                'remote_job', 'gopher', 'ssh', 'name', 'whois', 'domain', 'login', 'imap4',
+                                                'daytime', 'ctf', 'nntp', 'shell', 'IRC', 'nnsp', 'http_443', 'exec', 'printer',
+                                                'efs', 'courier', 'uucp', 'klogin', 'kshell', 'echo', 'discard', 'systat',
+                                                'supdup', 'iso_tsap', 'hostnames', 'csnet_ns', 'pop_2', 'sunrpc', 'uucp_path',
+                                                'netbios_ns', 'netbios_ssn', 'netbios_dgm', 'sql_net', 'vmnet', 'bgp', 'Z39_50',
+                                                'ldap', 'netstat', 'urh_i', 'X11', 'urp_i', 'pm_dump', 'tftp_u', 'tim_i', 'red_i'])
+            flag = col3.selectbox("Flag", ['SF', 'S1', 'REJ', 'S2', 'S0', 'S3', 'RSTO', 'RSTR', 'RSTOS0', 'OTH', 'SH'])
+
+            numerical_fields = ['count', 'src_bytes', 'dst_bytes', 'dst_host_same_src_port_rate',
+                                'srv_count', 'logged_in', 'dst_host_count', 'dst_host_srv_diff_host_rate', 'same_srv_rate']
+
+            input_data = {}
+
+            for i, key in enumerate(numerical_fields):
+                default_value = None if st.session_state.reset else 0.00
+                input_data[key] = (
+                    col1.number_input(key, value=default_value, key=key) if i % 3 == 0 else
+                    col2.number_input(key, value=default_value, key=key) if i % 3 == 1 else
+                    col3.number_input(key, value=default_value, key=key)
+                )
+
+            input_data['protocol_type'] = protocol_type
+            input_data['service'] = service
+            input_data['flag'] = flag
+
+            submit_button = st.form_submit_button(label="Predict")
+            reset_button = st.form_submit_button(label="Reset", on_click=reset_form)
+
+        return input_data, submit_button
+
 def main_page():
     input_data, submit = user_input_features()
     if submit:
@@ -325,45 +366,7 @@ def main_page():
         except Exception as e:
             return None
 
-    def user_input_features():
-        st.subheader("Enter Network Traffic Details")
-        if "reset" not in st.session_state:
-            st.session_state.reset = False
-        with st.form(key="input_form"):
-            col1, col2, col3 = st.columns(3)
-            protocol_type = col1.selectbox("Protocol Type", ['tcp', 'udp', 'icmp'])
-            service = col2.selectbox("Service", ['http', 'smtp', 'finger', 'domain_u', 'auth', 'telnet', 'ftp', 'eco_i', 'ntp_u',
-                                                'ecr_i', 'other', 'private', 'pop_3', 'ftp_data', 'rje', 'time', 'mtp', 'link',
-                                                'remote_job', 'gopher', 'ssh', 'name', 'whois', 'domain', 'login', 'imap4',
-                                                'daytime', 'ctf', 'nntp', 'shell', 'IRC', 'nnsp', 'http_443', 'exec', 'printer',
-                                                'efs', 'courier', 'uucp', 'klogin', 'kshell', 'echo', 'discard', 'systat',
-                                                'supdup', 'iso_tsap', 'hostnames', 'csnet_ns', 'pop_2', 'sunrpc', 'uucp_path',
-                                                'netbios_ns', 'netbios_ssn', 'netbios_dgm', 'sql_net', 'vmnet', 'bgp', 'Z39_50',
-                                                'ldap', 'netstat', 'urh_i', 'X11', 'urp_i', 'pm_dump', 'tftp_u', 'tim_i', 'red_i'])
-            flag = col3.selectbox("Flag", ['SF', 'S1', 'REJ', 'S2', 'S0', 'S3', 'RSTO', 'RSTR', 'RSTOS0', 'OTH', 'SH'])
-
-            numerical_fields = ['count', 'src_bytes', 'dst_bytes', 'dst_host_same_src_port_rate',
-                                'srv_count', 'logged_in', 'dst_host_count', 'dst_host_srv_diff_host_rate', 'same_srv_rate']
-
-            input_data = {}
-
-            for i, key in enumerate(numerical_fields):
-                default_value = None if st.session_state.reset else 0.00
-                input_data[key] = (
-                    col1.number_input(key, value=default_value, key=key) if i % 3 == 0 else
-                    col2.number_input(key, value=default_value, key=key) if i % 3 == 1 else
-                    col3.number_input(key, value=default_value, key=key)
-                )
-
-            input_data['protocol_type'] = protocol_type
-            input_data['service'] = service
-            input_data['flag'] = flag
-
-            submit_button = st.form_submit_button(label="Predict")
-            reset_button = st.form_submit_button(label="Reset", on_click=reset_form)
-
-        return input_data, submit_button
-
+    
 
 
 def main():
