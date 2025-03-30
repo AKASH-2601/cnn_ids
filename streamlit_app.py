@@ -322,16 +322,7 @@ def reset_form():
 
 def predict_model(input_df):
     try:
-        # Ensure the input DataFrame has the correct shape and data types
-        input_data = preprocess_data(input_df)
-
-        # Convert to a TensorFlow tensor
-        input_tensor = tf.convert_to_tensor(input_data, dtype=tf.float32)  # Explicitly set dtype
-
-        # Add a batch dimension if needed (depending on your model's expected input)
-        if len(input_tensor.shape) == 2:
-            input_tensor = tf.expand_dims(input_tensor, axis=0)
-
+        model = keras.models.load_model("my_model.keras")
         prediction = model.predict(input_tensor)[0][0]  # Access the raw probability
         return "Anomaly" if prediction > 0.5 else "Normal"
     except Exception as e:
