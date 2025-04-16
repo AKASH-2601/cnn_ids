@@ -340,7 +340,10 @@ def main_page():
                 processed_data = preprocess_data(input_data)
                 result = predict_model(processed_data)
                 if result:
-                    st.success(f"Prediction Result: **{result}**")
+                    if result == "Normal":
+                        st.success(f"Prediction Result: **{result}**")
+                    else:
+                        st.error(f"Prediction Result: **{result}**")
                     progress_bar = st.progress(0)
                     for i in range(100):
                         time.sleep(0.01)  # Add a small delay for visual effect
